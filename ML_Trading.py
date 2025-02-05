@@ -5,6 +5,7 @@ from ta.momentum import RSIIndicator, StochasticOscillator
 from ta.trend import MACD, EMAIndicator, SMAIndicator
 from ta.volatility import BollingerBands
 from ta.volume import OnBalanceVolumeIndicator
+from sklearn.model_selection import train_test_split
 
 # Stocks
 stocks = ['AAPL', 'META', 'TSLA', 'JPM', 'AMZN']
@@ -55,5 +56,19 @@ def define_labels(df):
     
     return df
 
-# Apply labels to each stock
+# Applying labels to each stock
 data = {stock: define_labels(df) for stock, df in data.items()}
+
+# Preparing data for training
+train_data = []
+target_data = []
+for stock, df in data.items():
+    features = df[['SMA_50', 'SMA_200', 'EMA_21', 'RSI', 'MACD', 'MACD_Signal', 'Stoch', 'BBW', 'OBV', 'Daily_Return', 'Weekly_Return', 'Monthly_Return']]
+    target = df['Signal']
+    train_data.append(features)
+    target_data.append(target)
+
+X = pd.concat(train_data)
+y = pd.concat(target_data)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
