@@ -158,3 +158,23 @@ y_pred_lr = model_log_reg.predict(X_test)
 print("One-vs-Rest Logistic Regression Performance:")
 print(classification_report(y_test, y_pred_lr))
 print(accuracy_score(y_test, y_pred_lr))
+
+
+# Soft Voting Classifier
+probs_1 = model_log_reg.predict_proba(X_test)
+probs_2 = model_rf.predict_proba(X_test)
+probs_3 = model_svm.predict_proba(X_test)
+probs_4 = model_xgb.predict_proba(X_test)
+
+# Combine the probabilities into a 3D array (samples x models x classes)
+all_probs = np.stack([probs_1, probs_2, probs_3, probs_4])
+
+# Average the probabilities across models (axis=0)
+avg_probs = np.max(all_probs, axis=0)
+
+# Get the class with the highest average probability
+final_predictions = np.argmax(avg_probs, axis=1)
+final_predictions = final_predictions - 1  # [0, 1, 2] → [-1, 0, 1]
+
+print(classification_report(y_test, final_predictions))
+print(accuracy_score(y_test, final_predictions))
