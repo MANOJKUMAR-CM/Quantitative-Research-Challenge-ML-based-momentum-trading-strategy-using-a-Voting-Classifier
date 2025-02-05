@@ -40,3 +40,20 @@ def add_features(df):
 
 for stock, df in data.items():
     data[stock] = add_features(df)
+    
+    
+def define_labels(df):
+    df['Signal'] = 0  # Hold by default
+    
+    # Buy Signals: Buy when RSI < 30 OR MACD crosses above Signal OR OBV rising
+    buy_condition = (df['RSI'] < 30) | (df['MACD'] > df['MACD_Signal']) & (df['OBV'].diff() > 0)
+    df.loc[buy_condition, 'Signal'] = 1  
+    
+    # Sell Signals: Sell when RSI > 70 OR MACD crosses below Signal OR OBV dropping
+    sell_condition = (df['RSI'] > 70) | (df['MACD'] < df['MACD_Signal']) & (df['OBV'].diff() < 0)
+    df.loc[sell_condition, 'Signal'] = -1  
+    
+    return df
+
+# Apply labels to each stock
+data = {stock: define_labels(df) for stock, df in data.items()}
