@@ -121,7 +121,7 @@ y_pred_svm = model_svm.predict(X_test)
 
 print("SVM:", classification_report(y_test, y_pred_svm))
 
-# Hyperparameter tuning
+# Hyperparameter tuning -> Random Forest
 param_grid = {
     'n_estimators': [100, 200],
     'max_depth': [5, 10, None],
@@ -131,3 +131,30 @@ model_rf.fit(X_train, y_train)
 
 y_pred_rf = model_rf.predict(X_test)
 print("Random Forest:",classification_report(y_test, y_pred_rf))
+
+# Logistic Regression
+# Scaling
+scaler = StandardScaler()
+poly = PolynomialFeatures(degree=2)
+
+# Improved Logistic Regression with higher max_iter and lower tol
+log_reg = LogisticRegression(solver='liblinear', max_iter=1000, penalty="l1", class_weight="balanced", tol=1e-5)
+
+# Pipeline
+pipeline = Pipeline([
+    ('scaler', scaler),
+    ('poly', poly),
+    ('classifier', log_reg)
+])
+
+# One-vs-Rest
+model_log_reg = OneVsRestClassifier(pipeline)
+model_log_reg.fit(X_train, y_train)
+
+# Predictions
+y_pred_lr = model_log_reg.predict(X_test)
+
+# Evaluation
+print("One-vs-Rest Logistic Regression Performance:")
+print(classification_report(y_test, y_pred_lr))
+print(accuracy_score(y_test, y_pred_lr))
