@@ -120,3 +120,14 @@ model_svm.fit(X_train, y_train)
 y_pred_svm = model_svm.predict(X_test)
 
 print("SVM:", classification_report(y_test, y_pred_svm))
+
+# Hyperparameter tuning
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [5, 10, None],
+}
+model_rf = GridSearchCV(RandomForestClassifier(), param_grid, cv=5, n_jobs=-1)
+model_rf.fit(X_train, y_train)
+
+y_pred_rf = model_rf.predict(X_test)
+print("Random Forest:",classification_report(y_test, y_pred_rf))
