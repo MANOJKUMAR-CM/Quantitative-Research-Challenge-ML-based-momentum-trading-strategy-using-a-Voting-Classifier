@@ -5,8 +5,16 @@ from ta.momentum import RSIIndicator, StochasticOscillator
 from ta.trend import MACD, EMAIndicator, SMAIndicator
 from ta.volatility import BollingerBands
 from ta.volume import OnBalanceVolumeIndicator
-from sklearn.model_selection import train_test_split
 
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, accuracy_score
 # Stocks
 stocks = ['AAPL', 'META', 'TSLA', 'JPM', 'AMZN']
 
@@ -72,3 +80,29 @@ X = pd.concat(train_data)
 y = pd.concat(target_data)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# XGB Classifier
+
+model_xgb = XGBClassifier(
+    objective='multi:softmax',   #'multi:softmax' for multi-class
+    n_estimators=700,            # number of trees
+    max_depth=5,                 # tree depth
+    learning_rate=0.1,           # step size
+    subsample=0.8,               # fraction of samples per tree
+    colsample_bytree=1,        # fraction of features per tree
+    reg_alpha=0, 
+    gamma = 0.2,# L1 regularization
+    reg_lambda=1 ,# L2 regularization
+    tree_method="hist",  # Fix for GPU warning
+    device="cuda"        
+    )
+
+
+# Shift labels to start from 0
+y_train_mapped = np.array(y_train) + 1  # [-1, 0, 1] → [0, 1, 2]
+
+# Train the model with modified labels
+model_xgb.fit(X_train, y_train_mapped)
+y_pred_mapped = model_xgb.predict(X_test)
+y_pred_xgb = y_pred_mapped - 1  # [0, 1, 2] → [-1, 0, 1]
+print("XGB Classifier:",classification_report(y_test, y_pred_xgb))
