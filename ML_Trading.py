@@ -106,3 +106,17 @@ model_xgb.fit(X_train, y_train_mapped)
 y_pred_mapped = model_xgb.predict(X_test)
 y_pred_xgb = y_pred_mapped - 1  # [0, 1, 2] → [-1, 0, 1]
 print("XGB Classifier:",classification_report(y_test, y_pred_xgb))
+
+# SVM
+model_svm = Pipeline([
+    ("scaler", StandardScaler()),  # Normalize data
+    ("svm", OneVsRestClassifier(SVC(probability=True, kernel="rbf")))  # Use RBF kernel in One-vs-Rest
+])
+
+# Train the SVM model
+model_svm.fit(X_train, y_train)
+
+# Predict using the trained model
+y_pred_svm = model_svm.predict(X_test)
+
+print("SVM:", classification_report(y_test, y_pred_svm))
