@@ -178,3 +178,35 @@ final_predictions = final_predictions - 1  # [0, 1, 2] → [-1, 0, 1]
 
 print(classification_report(y_test, final_predictions))
 print(accuracy_score(y_test, final_predictions))
+
+
+# Testing Data from 1/ 1/ 2025 - 31/ 1/ 2025
+# Stocks
+stocks = ['AAPL', 'META', 'TSLA', 'JPM', 'AMZN']
+# Testing Data
+Test_data = {}
+for stock in stocks:
+    Test_df = yf.download(stock, start='2015-01-01', end='2025-01-31')
+    Test_data[stock] = Test_df
+    
+for stock, Test_df in Test_data.items():
+    Test_data[stock] = add_features(Test_df)
+    
+for stock, Test_df in Test_data.items():
+    # Keep only the last 30 rows
+    Test_data[stock] = Test_df.tail(30)
+
+# Apply labels to each stock
+Test_data = {stock: define_labels(df) for stock, df in Test_data.items()}
+
+# Prepare data for training
+test_data = []
+test_target_data = []
+for stock, df in Test_data.items():
+    features = df[['SMA_50', 'SMA_200', 'EMA_21', 'RSI', 'MACD', 'MACD_Signal', 'Stoch', 'BBW', 'OBV', 'Daily_Return', 'Weekly_Return', 'Monthly_Return']]
+    target = df['Signal']
+    test_data.append(features)
+    test_target_data.append(target)
+
+XTest = pd.concat(test_data)
+yTest = pd.concat(test_target_data)
