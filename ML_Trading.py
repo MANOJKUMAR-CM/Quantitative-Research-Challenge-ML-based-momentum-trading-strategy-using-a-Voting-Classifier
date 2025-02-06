@@ -180,7 +180,7 @@ print(classification_report(y_test, final_predictions))
 print(accuracy_score(y_test, final_predictions))
 
 
-# Testing Data from 1/ 1/ 2025 - 31/ 1/ 2025
+# Testing Data from 1/ 1/ 2025 - 30/ 1/ 2025
 # Stocks
 stocks = ['AAPL', 'META', 'TSLA', 'JPM', 'AMZN']
 # Testing Data
@@ -210,3 +210,46 @@ for stock, df in Test_data.items():
 
 XTest = pd.concat(test_data)
 yTest = pd.concat(test_target_data)
+
+# Xbg Performance: on Date from 1/ 1/ 2025 - 30/ 1/ 2025
+y_pred_mapped = model_xgb.predict(XTest)
+y_Testpred_xgb = y_pred_mapped - 1  # [0, 1, 2] → [-1, 0, 1]
+print(classification_report(yTest, y_Testpred_xgb))
+
+# One-vs-Rest Logistic Regression Performance: on Date from 1/ 1/ 2025 - 30/ 1/ 2025
+y_predTest_lr = model_log_reg.predict(XTest)
+
+# Evaluation
+print("One-vs-Rest Logistic Regression Performance:")
+print(classification_report(yTest, y_predTest_lr))
+print(accuracy_score(yTest, y_predTest_lr))
+
+# Random Forest Performance: on Date from 1/ 1/ 2025 - 30/ 1/ 2025
+y_pred_rf = model_rf.predict(XTest)
+print(classification_report(yTest, y_pred_rf))
+print(accuracy_score(yTest, y_pred_rf))
+
+# SVM Performance: on Date from 1/ 1/ 2025 - 30/ 1/ 2025
+y_pred_svm = model_svm.predict(XTest)
+
+print(classification_report(yTest, y_pred_svm))
+print(accuracy_score(yTest, y_pred_svm))
+
+
+probs_1 = model_log_reg.predict_proba(XTest)
+probs_2 = model_rf.predict_proba(XTest)
+probs_3 = model_svm.predict_proba(XTest)
+probs_4 = model_xgb.predict_proba(XTest)
+
+# Combine the probabilities into a 3D array (samples x models x classes)
+all_probs = np.stack([probs_1, probs_2, probs_3, probs_4])
+
+# Average the probabilities across models (axis=0)
+avg_probs = np.max(all_probs, axis=0)
+
+# Get the class with the highest average probability
+final_predictions = np.argmax(avg_probs, axis=1)
+final_predictions = final_predictions - 1  # [0, 1, 2] → [-1, 0, 1]
+
+print(classification_report(yTest, final_predictions))
+print(accuracy_score(yTest, final_predictions))
